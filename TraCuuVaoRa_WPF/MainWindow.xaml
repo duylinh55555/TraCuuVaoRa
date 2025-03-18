@@ -1,0 +1,37 @@
+﻿<Window x:Class="TraCuuVaoRa_WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TraCuuVaoRa_WPF"
+        mc:Ignorable="d"
+        Title="Tra cứu thông tin Quản lý vào ra"
+        WindowState="Maximized"
+        MinWidth="1350" MinHeight="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20*"/>
+            <ColumnDefinition Width="80*"/>
+        </Grid.ColumnDefinitions>
+
+        <!--Sidebar-->
+        <Button x:Name="beLateButton" Content="Tra cứu Vi phạm" 
+            HorizontalAlignment="Center" Margin="0,147,0,0" VerticalAlignment="Top" Width="228"
+            Click="beLateButton_Click" Height="46"/>
+        <Button x:Name="timeSearchButton" Content="Tra cứu Mốc thời gian" 
+                HorizontalAlignment="Center" Margin="0,217,0,0" VerticalAlignment="Top" Width="228"
+                Click="timeSearchButton_Click" Height="46"/>
+        <Button x:Name="configButton" Content="Cấu hình" 
+                HorizontalAlignment="Center" Margin="0,694,0,0" VerticalAlignment="Top" Width="228" Height="47"
+                Click="configButton_Click"/>
+        <Button x:Name="informationSearchButton" Content="Tìm kiếm thông tin" 
+            HorizontalAlignment="Center" Margin="0,287,0,0" VerticalAlignment="Top" Width="228"
+            Click="statisticButton_Click" Height="46"/>
+        <Button x:Name="statisticButton" Content="Thống kê" 
+            HorizontalAlignment="Center" Margin="0,364,0,0" VerticalAlignment="Top" Width="228"
+            Click="statisticButton_Click" Height="46"/>
+
+        <!--Main screen-->
+        <ContentControl x:Name="mainContentControl" Grid.Column="1" HorizontalAlignment="Stretch" Height="NaN" VerticalAlignment="Stretch" Width="NaN"/>
+    </Grid>
+</Window>

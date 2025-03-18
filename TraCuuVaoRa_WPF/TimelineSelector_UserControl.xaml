@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="TraCuuVaoRa_WPF.TimelineSelector_UserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TraCuuVaoRa_WPF"
+             mc:Ignorable="d" Height="38" Width="264">
+    <Grid>
+        <StackPanel Margin="0,0,0,0">
+            <TextBlock Text="Từ:" />
+            <StackPanel Orientation="Horizontal">
+                <ComboBox x:Name="startHourComboBox" Width="52">
+                </ComboBox>
+                <TextBlock Text=":" VerticalAlignment="Center" Margin="5,0"/>
+                <ComboBox x:Name="startMinuteComboBox" Width="53">
+                </ComboBox>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Margin="150,0,0,0">
+            <TextBlock Text="đến:" />
+            <StackPanel Orientation="Horizontal">
+                <ComboBox x:Name="endHourComboBox" Width="51">
+                </ComboBox>
+                <TextBlock Text=":" VerticalAlignment="Center" Margin="5,0"/>
+                <ComboBox x:Name="endMinuteComboBox" Width="51"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>
