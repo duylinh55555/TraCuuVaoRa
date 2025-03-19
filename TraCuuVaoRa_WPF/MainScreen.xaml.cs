@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -122,6 +123,96 @@ namespace TraCuuVaoRa_WPF
                     // Show, Hide Export Button
                     exportXlsxButton.Visibility = result.Any() ? Visibility.Visible : Visibility.Collapsed;
                 }
+            }
+        }
+
+        private void vehiclePersonDataGrid_Sorting(object sender, DataGridSortingEventArgs e)
+        {
+            // Get the selected column
+            string column = e.Column.SortMemberPath ?? string.Empty;
+
+            ICollectionView view = CollectionViewSource.GetDefaultView(vehiclePersonDataGrid.ItemsSource);
+
+            ListSortDirection direction = e.Column.SortDirection == ListSortDirection.Ascending
+                ? ListSortDirection.Descending
+                : ListSortDirection.Ascending;
+
+            view.SortDescriptions.Clear();
+
+            if (view != null)
+            {
+                switch (column)
+                {
+                    case "vethang.HoTen":
+                        var data = vehiclePersonDataGrid.ItemsSource.Cast<dynamic>().ToList();
+                        if (direction == ListSortDirection.Ascending)
+                        {
+                            data = data.OrderBy(item =>
+                            {
+                                string hoTen = item.vethang.HoTen;
+                                if (hoTen != null)
+                                {
+                                    if (hoTen.EndsWith(" "))
+                                        hoTen = hoTen.TrimEnd();
+                                    return string.Join(" ", hoTen.Split(' ').Reverse()).ToLower();
+                                }
+                                return string.Empty;
+                            }).ToList();
+                        }
+                        else
+                        {
+                            data = data.OrderByDescending(item =>
+                            {
+                                string hoTen = item.vethang.HoTen;
+                                if (hoTen != null)
+                                {
+                                    if (hoTen.EndsWith(" "))
+                                        hoTen = hoTen.TrimEnd();
+                                    return string.Join(" ", hoTen.Split(' ').Reverse()).ToLower();
+                                }
+                                return string.Empty;
+                            }).ToList();
+                        }
+                        vehiclePersonDataGrid.ItemsSource = data;
+                        break;
+
+                    case "TimeStartFormatted":
+                    case "TimeEndFormatted":
+                        var timeData = vehiclePersonDataGrid.ItemsSource.Cast<dynamic>().ToList();
+                        var timeProperty = column == "TimeStartFormatted" ? "TimeStartFormatted" : "TimeEndFormatted";
+                        if (direction == ListSortDirection.Ascending)
+                        {
+                            timeData = timeData.OrderBy(item =>
+                            {
+                                if (!string.IsNullOrEmpty(item.GetType().GetProperty(timeProperty)?.GetValue(item)?.ToString()))
+                                {
+                                    return DateTime.ParseExact(item.GetType().GetProperty(timeProperty)?.GetValue(item)?.ToString(), "dd/MM/yyyy HH:mm:ss", null);
+                                }
+                                return DateTime.MinValue;
+                            }).ToList();
+                        }
+                        else
+                        {
+                            timeData = timeData.OrderByDescending(item =>
+                            {
+                                if (!string.IsNullOrEmpty(item.GetType().GetProperty(timeProperty)?.GetValue(item)?.ToString()))
+                                {
+                                    return DateTime.ParseExact(item.GetType().GetProperty(timeProperty)?.GetValue(item)?.ToString(), "dd/MM/yyyy HH:mm:ss", null);
+                                }
+                                return DateTime.MinValue;
+                            }).ToList();
+                        }
+                        vehiclePersonDataGrid.ItemsSource = timeData;
+                        break;
+
+                    default:
+                        view.SortDescriptions.Add(new SortDescription(column, direction));
+                        break;
+                }
+
+                e.Column.SortDirection = direction;
+
+                e.Handled = true;
             }
         }
         

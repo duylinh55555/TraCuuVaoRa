@@ -114,5 +114,11 @@ namespace TraCuuVaoRa_WPF
         public DbSet<Car> Car { get; set; }
         public DbSet<VeThang> VeThang { get; set; }
         public DbSet<Part> Part { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Car>()
+                .HasKey(c => new { c.ID, c.TimeStart });
+        }
     }
 }

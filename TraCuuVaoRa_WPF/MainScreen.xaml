@@ -81,18 +81,21 @@
                   Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="15"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
-                  SelectionChanged="vehiclePersonDataGrid_SelectionChanged" FontSize="15">
+                  SelectionChanged="vehiclePersonDataGrid_SelectionChanged"
+                  SelectedIndex="0"
+                  Sorting="vehiclePersonDataGrid_Sorting"
+                  FontSize="15">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="STT" Binding="{Binding Index}"/>
-                <DataGridTextColumn Header="Số thẻ" Binding="{Binding vethang.STT}"/>
-                <DataGridTextColumn Header="Loại xe" Binding="{Binding part.Name}"/>
-                <DataGridTextColumn Header="Biển số" Binding="{Binding car.Digit}"/>
-                <DataGridTextColumn Header="Họ tên" Binding="{Binding vethang.HoTen}"/>
-                <DataGridTextColumn Header="Đơn vị" Binding="{Binding vethang.CanHo}"/>
-                <DataGridTextColumn Header="Cấp bậc" Binding="{Binding vethang.HieuXe}"/>
-                <DataGridTextColumn Header="Thời gian vào" Binding="{Binding TimeStartFormatted}"/>
-                <DataGridTextColumn Header="Thời gian ra" Binding="{Binding TimeEndFormatted}"/>
-                <DataGridTextColumn Header="Cổng" Binding="{Binding car.Computer}"/>
+                <DataGridTextColumn Header="STT" Binding="{Binding Index}"  SortMemberPath="Index"/>
+                <DataGridTextColumn Header="Số thẻ" Binding="{Binding vethang.STT}" SortMemberPath="vethang.STT"/>
+                <DataGridTextColumn Header="Loại xe" Binding="{Binding part.Name}" SortMemberPath="part.Name"/>
+                <DataGridTextColumn Header="Biển số" Binding="{Binding car.Digit}" SortMemberPath="car.Digit"/>
+                <DataGridTextColumn Header="Họ tên" Binding="{Binding vethang.HoTen}" SortMemberPath="vethang.HoTen"/>
+                <DataGridTextColumn Header="Đơn vị" Binding="{Binding vethang.CanHo}" SortMemberPath="vethang.CanHo"/>
+                <DataGridTextColumn Header="Cấp bậc" Binding="{Binding vethang.HieuXe}" SortMemberPath="vethang.HieuXe"/>
+                <DataGridTextColumn Header="Thời gian vào" Binding="{Binding TimeStartFormatted}" SortMemberPath="TimeStartFormatted" SortDirection="Descending"/>
+                <DataGridTextColumn Header="Thời gian ra" Binding="{Binding TimeEndFormatted}" SortMemberPath="TimeEndFormatted"/>
+                <DataGridTextColumn Header="Cổng" Binding="{Binding car.Computer}" SortMemberPath="car.Computer"/>
 
             </DataGrid.Columns>
         </DataGrid>
