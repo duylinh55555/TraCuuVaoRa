@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 
 namespace TraCuuVaoRa_WPF
@@ -29,9 +30,17 @@ namespace TraCuuVaoRa_WPF
         static private TimeSpan endTime;
         static private DataContext? context;
 
+        enum NotificateType
+        {
+            Success,
+            Error,
+            Warning
+        }
+
         public MainScreen(DataContext dataContext)
         {
             context = dataContext;
+
             startTime = context.timeSpans[0];
             endTime = context.timeSpans[7];
 
@@ -39,6 +48,12 @@ namespace TraCuuVaoRa_WPF
 
             dateSelector.SetDate(startDate, endDate);
             SetTime(startTime, endTime);
+
+            // default image
+            vehiclePersonDataGrid.xeRa_CustomImage = new BitmapImage(new Uri("pack://application:,,,/Images/blankimage.png", UriKind.Absolute));
+            vehiclePersonDataGrid.xeVao_CustomImage = new BitmapImage(new Uri("pack://application:,,,/Images/blankimage.png", UriKind.Absolute));
+
+            vehiclePersonDataGrid.dataContext = dataContext;
         }
 
         private void SetTime(TimeSpan startTime, TimeSpan endTime)
@@ -118,206 +133,50 @@ namespace TraCuuVaoRa_WPF
                         item.TimeEndFormatted
                     }).ToList();
 
-                    vehiclePersonDataGrid.ItemsSource = indexedResult;
+                    vehiclePersonDataGrid.dataGrid.ItemsSource = indexedResult;
 
                     // Show, Hide Export Button
                     exportXlsxButton.Visibility = result.Any() ? Visibility.Visible : Visibility.Collapsed;
+
+                    var serverDateTime = context.Database.SqlQueryRaw<DateTime>("SELECT GETDATE() AS Value").Single();
+                    Notificate(NotificateType.Success, serverDateTime);
                 }
             }
         }
 
-        private void vehiclePersonDataGrid_Sorting(object sender, DataGridSortingEventArgs e)
-        {
-            // Get the selected column
-            string column = e.Column.SortMemberPath ?? string.Empty;
-
-            ICollectionView view = CollectionViewSource.GetDefaultView(vehiclePersonDataGrid.ItemsSource);
-
-            ListSortDirection direction = e.Column.SortDirection == ListSortDirection.Ascending
-                ? ListSortDirection.Descending
-                : ListSortDirection.Ascending;
-
-            view.SortDescriptions.Clear();
-
-            if (view != null)
-            {
-                switch (column)
-                {
-                    case "vethang.HoTen":
-                        var data = vehiclePersonDataGrid.ItemsSource.Cast<dynamic>().ToList();
-                        if (direction == ListSortDirection.Ascending)
-                        {
-                            data = data.OrderBy(item =>
-                            {
-                                string hoTen = item.vethang.HoTen;
-                                if (hoTen != null)
-                                {
-                                    if (hoTen.EndsWith(" "))
-                                        hoTen = hoTen.TrimEnd();
-                                    return string.Join(" ", hoTen.Split(' ').Reverse()).ToLower();
-                                }
-                                return string.Empty;
-                            }).ToList();
-                        }
-                        else
-                        {
-                            data = data.OrderByDescending(item =>
-                            {
-                                string hoTen = item.vethang.HoTen;
-                                if (hoTen != null)
-                                {
-                                    if (hoTen.EndsWith(" "))
-                                        hoTen = hoTen.TrimEnd();
-                                    return string.Join(" ", hoTen.Split(' ').Reverse()).ToLower();
-                                }
-                                return string.Empty;
-                            }).ToList();
-                        }
-                        vehiclePersonDataGrid.ItemsSource = data;
-                        break;
-
-                    case "TimeStartFormatted":
-                    case "TimeEndFormatted":
-                        var timeData = vehiclePersonDataGrid.ItemsSource.Cast<dynamic>().ToList();
-                        var timeProperty = column == "TimeStartFormatted" ? "TimeStartFormatted" : "TimeEndFormatted";
-                        if (direction == ListSortDirection.Ascending)
-                        {
-                            timeData = timeData.OrderBy(item =>
-                            {
-                                if (!string.IsNullOrEmpty(item.GetType().GetProperty(timeProperty)?.GetValue(item)?.ToString()))
-                                {
-                                    return DateTime.ParseExact(item.GetType().GetProperty(timeProperty)?.GetValue(item)?.ToString(), "dd/MM/yyyy HH:mm:ss", null);
-                                }
-                                return DateTime.MinValue;
-                            }).ToList();
-                        }
-                        else
-                        {
-                            timeData = timeData.OrderByDescending(item =>
-                            {
-                                if (!string.IsNullOrEmpty(item.GetType().GetProperty(timeProperty)?.GetValue(item)?.ToString()))
-                                {
-                                    return DateTime.ParseExact(item.GetType().GetProperty(timeProperty)?.GetValue(item)?.ToString(), "dd/MM/yyyy HH:mm:ss", null);
-                                }
-                                return DateTime.MinValue;
-                            }).ToList();
-                        }
-                        vehiclePersonDataGrid.ItemsSource = timeData;
-                        break;
-
-                    default:
-                        view.SortDescriptions.Add(new SortDescription(column, direction));
-                        break;
-                }
-
-                e.Column.SortDirection = direction;
-
-                e.Handled = true;
-            }
-        }
-        
         private void searchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             string searchText = searchTextBox.Text.ToLower();
-            vehiclePersonDataGrid.Items.Filter = item =>
-            {
-                if (item is { })
-                {
-                    var car = (item as dynamic).car;
-                    var vethang = (item as dynamic).vethang;
-                    return car.Digit.ToLower().Contains(searchText)
-                        || vethang.HoTen.ToLower().Contains(searchText)
-                        || vethang.STT.ToLower().Contains(searchText)
-                        || vethang.CanHo.ToLower().Contains(searchText)
-                        || vethang.HieuXe.ToLower().Contains(searchText)
-                        || car.Computer.ToLower().Contains(searchText);
-                }
-                return false;
-            };
+            vehiclePersonDataGrid.Search_DataGrid(searchText);
         }
 
         private void exportXlsxButton_Click(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Filter = "Excel Files|*.xlsx",
-                Title = "Save an Excel File"
-            };
-
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                var filePath = saveFileDialog.FileName;
-                var filteredItems = vehiclePersonDataGrid.Items.Cast<dynamic>().ToList();
-
-                using (var package = new OfficeOpenXml.ExcelPackage())
-                {
-                    var worksheet = package.Workbook.Worksheets.Add("Data");
-
-                    // Add headers
-                    worksheet.Cells[1, 1].Value = "Số thẻ";
-                    worksheet.Cells[1, 2].Value = "Biển số";
-                    worksheet.Cells[1, 3].Value = "Họ tên";
-                    worksheet.Cells[1, 4].Value = "Đơn vị";
-                    worksheet.Cells[1, 5].Value = "Cấp bậc";
-                    worksheet.Cells[1, 6].Value = "Thời gian vào";
-                    worksheet.Cells[1, 7].Value = "Thời gian ra";
-                    worksheet.Cells[1, 8].Value = "Cổng";
-
-                    // Add data
-                    for (int i = 0; i < filteredItems.Count; i++)
-                    {
-                        var car = filteredItems[i].car;
-                        var vethang = filteredItems[i].vethang;
-
-                        worksheet.Cells[i + 2, 1].Value = vethang.STT;
-                        worksheet.Cells[i + 2, 2].Value = car.Digit;
-                        worksheet.Cells[i + 2, 3].Value = vethang.HoTen;
-                        worksheet.Cells[i + 2, 4].Value = vethang.CanHo;
-                        worksheet.Cells[i + 2, 5].Value = vethang.HieuXe;
-                        worksheet.Cells[i + 2, 6].Value = car.TimeStart?.ToString("dd/MM/yyyy HH:mm:ss");
-                        worksheet.Cells[i + 2, 7].Value = car.TimeEnd?.ToString("dd/MM/yyyy HH:mm:ss");
-                        worksheet.Cells[i + 2, 8].Value = car.Computer;
-                    }
-
-                    // Save the file
-                    package.SaveAs(new FileInfo(filePath));
-                }
-
-                MessageBox.Show("Xuất file thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            vehiclePersonDataGrid.ExportToFile();
         }
 
-        // Set Image
-        private void vehiclePersonDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Notificate(NotificateType type, DateTime serverDateTime)
         {
-            string xeVaoImageFileName = "";
-            string xeVaoImageDate = "";
-
-            string xeRaImageFileName = "";
-            string xeRaImageDate = "";
-
-            if (vehiclePersonDataGrid.SelectedItem != null)
+            switch (type)
             {
-                dynamic selectedItem = vehiclePersonDataGrid.SelectedItem;
-                xeVaoImageFileName = selectedItem.car.Images + ".jpg";
-                xeVaoImageDate = selectedItem.car.TimeStart?.ToString("MM-dd-yyyy") ?? "";
+                case NotificateType.Success:
+                    notificateTextBlock.Text = $"Tra cứu thành công (Dữ liệu được cập nhật lúc {serverDateTime:HH:mm:ss dd/MM/yy})"; 
+                    notificateTextBlock.Foreground = Brushes.Green;
+                    break;
 
-                xeRaImageFileName = selectedItem.car.Images2 + ".jpg";
-                xeRaImageDate = selectedItem.car.TimeEnd?.ToString("MM-dd-yyyy") ?? "";
+                case NotificateType.Error:
+                    notificateTextBlock.Text = "Không thể kết nối tới CSDL";
+                    notificateTextBlock.Foreground = Brushes.Red;
+                    break;
+
+                case NotificateType.Warning:
+                    notificateTextBlock.Text = ""; 
+                    notificateTextBlock.Foreground = Brushes.Yellow;
+                    break;
+
+                default:
+                    break;
             }
-
-            string xeVaoPath = System.IO.Path.Combine(context?.xeVaoImageFolderUrl ?? string.Empty, xeVaoImageDate, xeVaoImageFileName);
-            string xeRaPath = System.IO.Path.Combine(context?.xeRaImageFolderUrl ?? string.Empty, xeRaImageDate, xeRaImageFileName);
-
-            if (File.Exists(xeVaoPath))
-                xeVao_CustomImage.Source = new BitmapImage(new Uri(xeVaoPath, UriKind.Absolute));
-            else
-                xeVao_CustomImage.Source = new BitmapImage(new Uri("pack://application:,,,/Images/blankimage.png", UriKind.Absolute));
-
-            if (File.Exists(xeRaPath))
-                xeRa_CustomImage.Source = new BitmapImage(new Uri(xeRaPath, UriKind.Absolute));
-            else
-                xeRa_CustomImage.Source = new BitmapImage(new Uri("pack://application:,,,/Images/blankimage.png", UriKind.Absolute));
         }
         #endregion
 

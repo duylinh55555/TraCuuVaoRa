@@ -23,22 +23,32 @@ namespace TraCuuVaoRa_WPF
         private double zoomFactor = 2.0;
         private int zoomSize = 400;
 
+        public static readonly DependencyProperty SourceProperty =
+            DependencyProperty.Register(
+                "Source",
+                typeof(ImageSource),
+                typeof(CustomImage_UserControl),
+                new PropertyMetadata(null, OnSourceChanged));
+
+        public ImageSource Source
+        {
+            get { return (ImageSource)GetValue(SourceProperty); }
+            set { SetValue(SourceProperty, value); }
+        }
+
+        private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = d as CustomImage_UserControl;
+            if (control != null)
+            {
+                control.originalImage.Source = e.NewValue as ImageSource;
+                control.zoomedImage.Source = e.NewValue as ImageSource;
+            }
+        }
+
         public CustomImage_UserControl()
         {
             InitializeComponent();
-        }
-
-        // Set originalImage source
-        public ImageSource Source
-        {
-            get
-            {
-                return originalImage.Source;
-            }
-            set
-            {
-                originalImage.Source = value;
-            }
         }
 
         public void OriginalImage_MouseMove(object sender, MouseEventArgs e)

@@ -45,22 +45,23 @@
                 </StackPanel>
             </StackPanel>
         </StackPanel>
+
         <!-- Search TextBox -->
-        <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="25 72 0 0">
+        <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="25 82 0 0">
             <TextBlock Text="Tìm kiếm:" Margin="0 5"/>
-            <TextBox x:Name="searchTextBox" 
+            <TextBox x:Name="searchTextBox"
                  HorizontalAlignment="Left" Width="455" Height="32"
                  TextWrapping="Wrap" TextChanged="searchTextBox_TextChanged" />
+            <TextBlock x:Name="notificateTextBlock" FontWeight="Medium"  Foreground="Green" Margin="0 10 0 0"/>
         </StackPanel>
 
-
         <!-- Search and Export Buttons -->
-            <Button x:Name="searchButton" Content="Tra cứu" 
-                    Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Height="55" Width="116" Margin="30 20 30 0" 
-                    Click="searchButton_Click"/>
-            <Button x:Name="exportXlsxButton" Content="Xuất file" Visibility="Hidden"
-                    Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Height="55" Width="116" Margin="30 20"
-                    Click="exportXlsxButton_Click"/>
+        <Button x:Name="searchButton" Content="Tra cứu"
+                Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Height="55" Width="116" Margin="30 20 30 0" 
+                Click="searchButton_Click"/>
+        <Button x:Name="exportXlsxButton" Content="Xuất file" Visibility="Hidden"
+                Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Height="55" Width="116" Margin="30 20"
+                Click="exportXlsxButton_Click"/>
         
         <!-- Images -->
         <Grid Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" Margin="150, 10, 10, 10">
@@ -69,35 +70,17 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <GroupBox Header="Ảnh xe vào" Grid.Column="0" Margin="5" FontSize="14">
-                <local:CustomImage_UserControl Grid.Column="0" x:Name="xeVao_CustomImage" Margin="6"/>
+                <local:CustomImage_UserControl Grid.Column="0" x:Name="xeVao_CustomImage" Margin="6" 
+                                               Source="{Binding xeVao_CustomImage, ElementName=vehiclePersonDataGrid}"/>
             </GroupBox>
             <GroupBox Header="Ảnh xe ra" Grid.Column="1" Margin="5" FontSize="14">
-                <local:CustomImage_UserControl Grid.Column="1" x:Name="xeRa_CustomImage" Margin="6"/>
+                <local:CustomImage_UserControl Grid.Column="1" x:Name="xeRa_CustomImage" Margin="6" 
+                                               Source="{Binding xeRa_CustomImage, ElementName=vehiclePersonDataGrid}"/>
             </GroupBox>
         </Grid>
 
         <!--Data table-->
-        <DataGrid x:Name="vehiclePersonDataGrid" 
-                  Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="15"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  SelectionChanged="vehiclePersonDataGrid_SelectionChanged"
-                  SelectedIndex="0"
-                  Sorting="vehiclePersonDataGrid_Sorting"
-                  FontSize="15">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="STT" Binding="{Binding Index}"  SortMemberPath="Index"/>
-                <DataGridTextColumn Header="Số thẻ" Binding="{Binding vethang.STT}" SortMemberPath="vethang.STT"/>
-                <DataGridTextColumn Header="Loại xe" Binding="{Binding part.Name}" SortMemberPath="part.Name"/>
-                <DataGridTextColumn Header="Biển số" Binding="{Binding car.Digit}" SortMemberPath="car.Digit"/>
-                <DataGridTextColumn Header="Họ tên" Binding="{Binding vethang.HoTen}" SortMemberPath="vethang.HoTen"/>
-                <DataGridTextColumn Header="Đơn vị" Binding="{Binding vethang.CanHo}" SortMemberPath="vethang.CanHo"/>
-                <DataGridTextColumn Header="Cấp bậc" Binding="{Binding vethang.HieuXe}" SortMemberPath="vethang.HieuXe"/>
-                <DataGridTextColumn Header="Thời gian vào" Binding="{Binding TimeStartFormatted}" SortMemberPath="TimeStartFormatted" SortDirection="Descending"/>
-                <DataGridTextColumn Header="Thời gian ra" Binding="{Binding TimeEndFormatted}" SortMemberPath="TimeEndFormatted"/>
-                <DataGridTextColumn Header="Cổng" Binding="{Binding car.Computer}" SortMemberPath="car.Computer"/>
-
-            </DataGrid.Columns>
-        </DataGrid>
+        <local:DataGrid_UserControl x:Name="vehiclePersonDataGrid" 
+                  Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="15"/>
     </Grid>
 </UserControl>

@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
+﻿using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -33,6 +34,13 @@ namespace TraCuuVaoRa_WPF
         static private DataContext? context;
         static private TimeSpan[] timeSpans;
 
+        enum NotificateType
+        {
+            Success,
+            Error,
+            Warning
+        }
+
         public BeLateScreen(DataContext dataContext)
         {
             context = dataContext;
@@ -41,6 +49,7 @@ namespace TraCuuVaoRa_WPF
             InitializeComponent();
 
             dateSelector.SetDate(startDate, endDate);
+            vehiclePersonDataGrid.dataContext = dataContext;
         }
 
         private void searchButton_Click(object sender, RoutedEventArgs e)
@@ -247,9 +256,12 @@ namespace TraCuuVaoRa_WPF
                         item.TimeEndFormatted
                     }).ToList();
 
-                    vehiclePersonDataGrid.ItemsSource = indexedResult;
+                    vehiclePersonDataGrid.dataGrid.ItemsSource = indexedResult;
 
                     exportXlsxButton.Visibility = result.Any() ? Visibility.Visible : Visibility.Collapsed;
+
+                    var serverDateTime = context.Database.SqlQueryRaw<DateTime>("SELECT GETDATE() AS Value").Single();
+                    Notificate(NotificateType.Success, serverDateTime);
                 }
             }
         }
@@ -257,7 +269,7 @@ namespace TraCuuVaoRa_WPF
         private void searchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             string searchText = searchTextBox.Text.ToLower();
-            vehiclePersonDataGrid.Items.Filter = item =>
+            vehiclePersonDataGrid.dataGrid.Items.Filter = item =>
             {
                 if (item is { })
                 {
@@ -285,7 +297,7 @@ namespace TraCuuVaoRa_WPF
             if (saveFileDialog.ShowDialog() == true)
             {
                 var filePath = saveFileDialog.FileName;
-                var filteredItems = vehiclePersonDataGrid.Items.Cast<dynamic>().ToList();
+                var filteredItems = vehiclePersonDataGrid.dataGrid.Items.Cast<dynamic>().ToList();
 
                 using (var package = new OfficeOpenXml.ExcelPackage())
                 {
@@ -325,6 +337,30 @@ namespace TraCuuVaoRa_WPF
             }
         }
 
+        private void Notificate(NotificateType type, DateTime serverDateTime)
+        {
+            switch (type)
+            {
+                case NotificateType.Success:
+                    notificateTextBlock.Text = $"Tra cứu thành công (Dữ liệu được cập nhật lúc {serverDateTime:HH:mm:ss dd/MM/yy})";
+                    notificateTextBlock.Foreground = Brushes.Green;
+                    break;
+
+                case NotificateType.Error:
+                    notificateTextBlock.Text = "Không thể kết nối tới CSDL";
+                    notificateTextBlock.Foreground = Brushes.Red;
+                    break;
+
+                case NotificateType.Warning:
+                    notificateTextBlock.Text = "";
+                    notificateTextBlock.Foreground = Brushes.Yellow;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
         // Set Image
         private void vehiclePersonDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -334,9 +370,9 @@ namespace TraCuuVaoRa_WPF
             string xeRaImageFileName = "";
             string xeRaImageDate = "";
 
-            if (vehiclePersonDataGrid.SelectedItem != null)
+            if (vehiclePersonDataGrid.dataGrid.SelectedItem != null)
             {
-                dynamic selectedItem = vehiclePersonDataGrid.SelectedItem;
+                dynamic selectedItem = vehiclePersonDataGrid.dataGrid.SelectedItem;
                 xeVaoImageFileName = selectedItem.car.Images + ".jpg";
                 xeVaoImageDate = selectedItem.car.TimeStart?.ToString("MM-dd-yyyy") ?? "";
 
